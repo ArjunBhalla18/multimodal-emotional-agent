@@ -1,0 +1,203 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import { useAuth } from "@/context/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Toggle } from "@/components/ui/toggle";
+import { toast } from "sonner";
+
+const INTEREST_OPTIONS = [
+  "Mindfulness",
+  "Meditation",
+  "Exercise",
+  "Sleep",
+  "Nutrition",
+  "Journaling",
+  "Therapy",
+  "Yoga",
+  "Reading",
+  "Music",
+  "Art",
+  "Nature",
+];
+
+export default function ProfilePage() {
+  const { user, loading } = useAuth();
+  const router = useRouter();
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [country, setCountry] = useState("");
+  const [interests, setInterests] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push("/login");
+    }
+    if (user?.displayName) {
+      setName(user.displayName);
+    }
+  }, [user, loading, router]);
+
+  const toggleInterest = (interest: string) => {
+    setInterests((prev) => {
+      if (prev.includes(interest)) {
+        return prev.filter((i) => i !== interest);
+      }
+      if (prev.length >= 3) {
+        toast.info("You can select up to 3 interests");
+        return prev;
+      }
+      return [...prev, interest];
+    });
+  };
+
+  const handleSave = () => {
+    // TODO: Save to MongoDB
+    toast.success("Profile updated!");
+  };
+
+  if (loading) {
+    return (
+      <div className="flex flex-1 items-center justify-center">
+        <div className="h-10 w-10 animate-spin rounded-full border-3 border-violet-500 border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (!user) return null;
+
+  return (
+    <div className="flex flex-1 justify-center px-4 py-12">
+      {/* Background orbs */}
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 h-96 w-96 rounded-full bg-violet-500/10 blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 h-96 w-96 rounded-full bg-indigo-500/10 blur-3xl" />
+      </div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="relative w-full max-w-2xl space-y-6"
+      >
+        {/* Profile Header */}
+        <Card className="border-border/60 bg-card/80 shadow-xl backdrop-blur-sm">
+          <CardContent className="flex flex-col items-center gap-4 pt-8 pb-6">
+            <Avatar className="h-20 w-20">
+              <AvatarFallback className="bg-gradient-to-br from-violet-500 to-indigo-600 text-2xl font-bold text-white">
+                {user.displayName?.[0]?.toUpperCase() ||
+                  user.email?.[0]?.toUpperCase() ||
+                  "U"}
+              </AvatarFallback>
+            </Avatar>
+            <div className="text-center">
+              <h2 className="text-xl font-bold">
+                {user.displayName || "User"}
+              </h2>
+              <p className="text-sm text-muted-foreground">{user.email}</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Profile Form */}
+        <Card className="border-border/60 bg-card/80 shadow-xl backdrop-blur-sm">
+          <CardHeader>
+            <CardTitle>Personal Information</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <label htmlFor="profile-name" className="text-sm font-medium">
+                  Name
+                </label>
+                <Input
+                  id="profile-name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="rounded-xl"
+                />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="profile-email" className="text-sm font-medium">
+                  Email
+                </label>
+                <Input
+                  id="profile-email"
+                  value={user.email || ""}
+                  disabled
+                  className="rounded-xl"
+                />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="profile-phone" className="text-sm font-medium">
+                  Phone (optional)
+                </label>
+                <Input
+                  id="profile-phone"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="+1 (555) 000-0000"
+                  className="rounded-xl"
+                />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="profile-country" className="text-sm font-medium">
+                  Country (optional)
+                </label>
+                <Input
+                  id="profile-country"
+                  value={country}
+                  onChange={(e) => setCountry(e.target.value)}
+                  placeholder="United States"
+                  className="rounded-xl"
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Interests */}
+        <Card className="border-border/60 bg-card/80 shadow-xl backdrop-blur-sm">
+          <CardHeader>
+            <CardTitle>
+              Interests{" "}
+              <span className="text-sm font-normal text-muted-foreground">
+                (select up to 3)
+              </span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-2">
+              {INTEREST_OPTIONS.map((interest) => (
+                <Toggle
+                  key={interest}
+                  pressed={interests.includes(interest)}
+                  onPressedChange={() => toggleInterest(interest)}
+                  className="rounded-full border border-border/60 px-4 py-1.5 text-sm data-[state=on]:border-violet-500 data-[state=on]:bg-violet-500/10 data-[state=on]:text-violet-600 dark:data-[state=on]:text-violet-400"
+                  id={`interest-${interest.toLowerCase()}`}
+                >
+                  {interest}
+                </Toggle>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Save */}
+        <div className="flex justify-end">
+          <Button
+            onClick={handleSave}
+            className="rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-8 text-white shadow-lg shadow-violet-500/25 hover:shadow-violet-500/40"
+            id="save-profile"
+          >
+            Save Changes
+          </Button>
+        </div>
+      </motion.div>
+    </div>
+  );
+}

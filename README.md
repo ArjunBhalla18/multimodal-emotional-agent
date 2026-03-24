@@ -1,36 +1,85 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MindfulAI — Emotionally-Aware AI Companion
+
+A full-stack multimodal conversational AI assistant built with Next.js 16, featuring text/voice input, facial emotion detection, and emotionally-aware responses.
+
+## Tech Stack
+
+- **Frontend**: Next.js 16 (App Router), TypeScript, Tailwind CSS v4, shadcn/ui, Framer Motion
+- **Auth**: Firebase Authentication
+- **Database**: MongoDB Atlas
+- **AI**: Gemini API (LLM), Whisper (STT), ElevenLabs (TTS)
+- **Emotion Detection**: Client-side webcam (stub — ready for DeepFace/face-api.js)
 
 ## Getting Started
 
-First, run the development server:
+### 1. Install Dependencies
+
+```bash
+npm install
+```
+
+### 2. Configure Environment Variables
+
+Copy `.env.example` to `.env.local` and fill in your API keys:
+
+```bash
+cp .env.example .env.local
+```
+
+Required keys:
+| Variable | Where to get it |
+|---|---|
+| `NEXT_PUBLIC_FIREBASE_*` | [Firebase Console](https://console.firebase.google.com) → Project Settings |
+| `MONGODB_URI` | [MongoDB Atlas](https://cloud.mongodb.com) → Connect → Connection String |
+| `GEMINI_API_KEY` | [Google AI Studio](https://aistudio.google.com/apikey) |
+| `ELEVENLABS_API_KEY` | [ElevenLabs](https://elevenlabs.io) → Profile → API Key |
+| `ELEVENLABS_VOICE_ID` | ElevenLabs → Voices → Select a voice → Copy ID |
+
+### 3. Run Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+src/
+├── app/
+│   ├── api/
+│   │   ├── chat/route.ts          # Gemini chat endpoint
+│   │   ├── transcribe/route.ts    # Whisper STT endpoint
+│   │   ├── tts/route.ts           # ElevenLabs TTS endpoint
+│   │   └── emergency-support/route.ts
+│   ├── login/page.tsx
+│   ├── signup/page.tsx
+│   ├── chat/page.tsx
+│   ├── profile/page.tsx
+│   ├── layout.tsx
+│   └── page.tsx                   # Landing page
+├── components/
+│   ├── ui/                        # shadcn/ui components
+│   ├── ChatWindow.tsx
+│   ├── MessageBubble.tsx
+│   ├── VoiceRecorder.tsx
+│   ├── EmotionCamera.tsx
+│   └── Navbar.tsx
+├── context/
+│   └── AuthContext.tsx
+├── lib/
+│   ├── firebase.ts
+│   ├── mongodb.ts
+│   ├── gemini.ts
+│   └── elevenlabs.ts
+└── services/
+    ├── contextBuilder.ts
+    └── safetyFilter.ts
+```
 
-## Learn More
+## Safety
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- No medical advice or prescriptions
+- On-device emotion processing only (no video/audio stored)
+- Crisis resources via "Get Help" button
