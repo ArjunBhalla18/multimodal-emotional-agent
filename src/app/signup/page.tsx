@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { toast } from "sonner";
+import { SerenaMark } from "@/components/SerenaMark";
 
 export default function SignupPage() {
   const [name, setName] = useState("");
@@ -36,7 +37,7 @@ export default function SignupPage() {
 
     try {
       await signup(email, password, name);
-      toast.success("Account created! Welcome to MindfulAI 🧠");
+      toast.success("Account created! Welcome to Serena");
       router.push("/chat");
     } catch {
       toast.error("Failed to create account. Please try again.");
@@ -61,12 +62,12 @@ export default function SignupPage() {
       >
         <Card className="border-border/60 bg-card/80 shadow-xl backdrop-blur-sm">
           <CardHeader className="space-y-2 text-center pb-2">
-            <div className="mx-auto mb-2 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 shadow-lg shadow-violet-500/25">
-              <span className="text-2xl">🧠</span>
+            <div className="mx-auto mb-2 flex h-14 w-14 items-center justify-center overflow-hidden rounded-2xl bg-white p-2 shadow-lg shadow-violet-500/20 ring-1 ring-violet-500/20 dark:bg-white">
+              <SerenaMark className="h-full w-full" />
             </div>
             <h1 className="text-2xl font-bold">Create your account</h1>
             <p className="text-sm text-muted-foreground">
-              Start your journey with MindfulAI
+              Start your journey with Serena
             </p>
           </CardHeader>
           <CardContent>

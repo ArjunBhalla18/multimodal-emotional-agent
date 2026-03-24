@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { toast } from "sonner";
+import { SerenaMark } from "@/components/SerenaMark";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -48,8 +49,8 @@ export default function LoginPage() {
       >
         <Card className="border-border/60 bg-card/80 shadow-xl backdrop-blur-sm">
           <CardHeader className="space-y-2 text-center pb-2">
-            <div className="mx-auto mb-2 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 shadow-lg shadow-violet-500/25">
-              <span className="text-2xl">🧠</span>
+            <div className="mx-auto mb-2 flex h-14 w-14 items-center justify-center overflow-hidden rounded-2xl bg-white p-2 shadow-lg shadow-violet-500/20 ring-1 ring-violet-500/20 dark:bg-white">
+              <SerenaMark className="h-full w-full" />
             </div>
             <h1 className="text-2xl font-bold">Welcome back</h1>
             <p className="text-sm text-muted-foreground">

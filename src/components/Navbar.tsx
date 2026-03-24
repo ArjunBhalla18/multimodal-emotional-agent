@@ -18,6 +18,7 @@ import {
 import { useTheme } from "@/context/ThemeContext";
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { SerenaMark } from "@/components/SerenaMark";
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -38,12 +39,17 @@ export default function Navbar() {
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 shadow-lg shadow-violet-500/25 transition-shadow group-hover:shadow-violet-500/40">
-            <span className="text-lg">🧠</span>
+          <div className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white p-1 shadow-md shadow-violet-500/15 ring-1 ring-violet-500/20 transition-shadow group-hover:shadow-violet-500/30 dark:bg-white">
+            <SerenaMark className="h-full w-full" priority />
           </div>
-          <span className="text-lg font-bold bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent dark:from-violet-400 dark:to-indigo-400">
-            MindfulAI
-          </span>
+          <div className="flex flex-col items-start gap-0.5 leading-none">
+            <span className="font-brand text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
+              Serena
+            </span>
+            <span className="max-w-[11rem] text-[0.65rem] font-sans font-normal leading-snug tracking-wide text-muted-foreground sm:max-w-none sm:text-xs">
+              Conversations that Care
+            </span>
+          </div>
         </Link>
 
         {/* Desktop Nav */}

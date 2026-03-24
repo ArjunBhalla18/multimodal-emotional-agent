@@ -48,7 +48,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!isValidAuth(auth)) {
-      // Firebase not configured — skip auth
       setLoading(false);
       return;
     }
@@ -60,14 +59,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (email: string, password: string) => {
-    if (!isValidAuth(auth)) throw new Error("Firebase not configured. Add API keys to .env.local");
+    if (!isValidAuth(auth))
+      throw new Error("Firebase not configured. Add API keys to .env.local");
     await signInWithEmailAndPassword(auth, email, password);
   };
 
   const signup = async (email: string, password: string, name: string) => {
-    if (!isValidAuth(auth)) throw new Error("Firebase not configured. Add API keys to .env.local");
+    if (!isValidAuth(auth))
+      throw new Error("Firebase not configured. Add API keys to .env.local");
+
+    // Step 1: Create user in Firebase Auth
     const cred = await createUserWithEmailAndPassword(auth, email, password);
     await updateProfile(cred.user, { displayName: name });
+
+    // Step 2: Save user profile to MongoDB
+    try {
+      await fetch("/api/user", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: cred.user.uid, // Firebase UID as our MongoDB user ID
+          name,
+          email,
+          // API hashes this before storing
+          password,
+        }),
+      });
+    } catch (e) {
+      // Non-critical: user can still use the app even if MongoDB save fails
+      console.error("Failed to save user to MongoDB:", e);
+    }
   };
 
   const logout = async () => {

@@ -4,6 +4,12 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Display serif for the Serena wordmark (paired with --font-brand from layout) */
+.font-brand {
+  font-family: var(--font-brand), ui-serif, Georgia, "Times New Roman", serif;
+  font-feature-settings: "liga" 1, "kern" 1;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

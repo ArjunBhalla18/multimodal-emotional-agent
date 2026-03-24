@@ -8,10 +8,12 @@ export interface ChatMessage {
   parts: { text: string }[];
 }
 
+// Main chat response — now accepts emotionalContext from MongoDB
 export async function generateChatResponse(
   message: string,
   emotion: string,
-  history: ChatMessage[] = []
+  history: ChatMessage[] = [],
+  emotionalContext: string = "" // What we know about the user from past chats
 ): Promise<string> {
   const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
@@ -28,15 +30,20 @@ export async function generateChatResponse(
       ...history,
     ],
     generationConfig: {
-      maxOutputTokens: 1024,
-      temperature: 0.8,
+      maxOutputTokens: 300, // Reduced from 1024 — forces shorter, more human responses
+      temperature: 0.9,    // Slightly higher = more natural/varied responses
     },
   });
 
   const systemPrompt = getSystemPrompt(emotion);
-  const fullMessage = `${systemPrompt}\n\nUser emotion: ${emotion}\nUser message: ${message}`;
+
+  // Include past emotional context if available (e.g. "User was feeling sad about a bad exam")
+  const contextSection = emotionalContext
+    ? `\nWhat I know about this user from before: ${emotionalContext}`
+    : "";
+
+  const fullMessage = `${systemPrompt}${contextSection}\n\nCurrent detected emotion: ${emotion}\nUser message: ${message}`;
 
   const result = await chat.sendMessage(fullMessage);
-  const response = result.response;
-  return response.text();
+  return result.response.text();
 }

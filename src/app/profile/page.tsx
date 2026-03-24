@@ -33,6 +33,7 @@ export default function ProfilePage() {
   const [phone, setPhone] = useState("");
   const [country, setCountry] = useState("");
   const [interests, setInterests] = useState<string[]>([]);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -42,6 +43,38 @@ export default function ProfilePage() {
       setName(user.displayName);
     }
   }, [user, loading, router]);
+
+  useEffect(() => {
+    if (!user?.uid) return;
+
+    const loadProfile = async () => {
+      try {
+        const response = await fetch("/api/user", {
+          headers: { "x-user-id": user.uid },
+        });
+
+        if (!response.ok) return;
+        const data = await response.json();
+
+        if (typeof data.name === "string" && data.name.trim()) {
+          setName(data.name);
+        }
+        if (typeof data.country === "string") {
+          setCountry(data.country);
+        }
+        if (typeof data.mobile === "string") {
+          setPhone(data.mobile);
+        }
+        if (Array.isArray(data.preferences)) {
+          setInterests(data.preferences.slice(0, 3));
+        }
+      } catch (error) {
+        console.error("Failed to load profile:", error);
+      }
+    };
+
+    loadProfile();
+  }, [user?.uid]);
 
   const toggleInterest = (interest: string) => {
     setInterests((prev) => {
@@ -56,9 +89,36 @@ export default function ProfilePage() {
     });
   };
 
-  const handleSave = () => {
-    // TODO: Save to MongoDB
-    toast.success("Profile updated!");
+  const handleSave = async () => {
+    if (!user?.uid || saving) return;
+
+    setSaving(true);
+    try {
+      const response = await fetch("/api/user", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "x-user-id": user.uid,
+        },
+        body: JSON.stringify({
+          name: name.trim(),
+          country: country.trim(),
+          mobile: phone.trim(),
+          preferences: interests,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save profile");
+      }
+
+      toast.success("Profile updated!");
+    } catch (error) {
+      console.error("Profile save failed:", error);
+      toast.error("Could not save profile. Please try again.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   if (loading) {
@@ -191,10 +251,11 @@ export default function ProfilePage() {
         <div className="flex justify-end">
           <Button
             onClick={handleSave}
+            disabled={saving}
             className="rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-8 text-white shadow-lg shadow-violet-500/25 hover:shadow-violet-500/40"
             id="save-profile"
           >
-            Save Changes
+            {saving ? "Saving..." : "Save Changes"}
           </Button>
         </div>
       </motion.div>

@@ -72,19 +72,19 @@ export default function Home() {
             Emotionally-Aware AI
           </motion.div>
 
-          {/* Heading */}
-          <h1 className="max-w-4xl text-5xl font-bold leading-tight tracking-tight text-foreground sm:text-6xl lg:text-7xl">
-            Your compassionate{" "}
-            <span className="bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent dark:from-violet-400 dark:via-purple-400 dark:to-indigo-400">
-              AI companion
-            </span>
+          {/* Brand */}
+          <h1 className="font-brand max-w-4xl text-5xl font-semibold leading-[1.08] tracking-tight text-foreground sm:text-6xl lg:text-7xl">
+            Serena
           </h1>
+          <p className="mt-3 max-w-2xl text-base font-sans font-normal leading-snug tracking-wide text-muted-foreground sm:text-lg md:text-xl">
+            Conversations that Care
+          </p>
 
           {/* Subheading */}
-          <p className="mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-xl">
-            MindfulAI listens, understands your emotions, and responds with
-            genuine empathy. Talk through text, voice, or let your expressions
-            speak for themselves.
+          <p className="mt-8 max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-xl">
+            Serena listens, understands your emotions, and responds with genuine
+            empathy. Talk through text, voice, or let your expressions speak
+            for themselves.
           </p>
 
           {/* CTAs */}
@@ -164,8 +164,10 @@ export default function Home() {
       <footer className="border-t border-border/40 px-4 py-8">
         <div className="mx-auto max-w-6xl text-center text-sm text-muted-foreground">
           <p>
-            © 2026 MindfulAI. Not a substitute for professional mental health care.
+            © 2026 SerenaAI. Not a substitute for professional mental health
+            care.
           </p>
+          <p className="mt-2">Made with ❤️</p>
         </div>
       </footer>
     </div>
