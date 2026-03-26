@@ -282,6 +282,23 @@ export default function ChatWindow() {
     setEmotion(detectedEmotion);
   }, []);
 
+  const handleNoSpeech = useCallback(() => {
+    const helpText = "Could you repeat? I couldn't hear you.";
+
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: crypto.randomUUID(),
+        role: "assistant",
+        text: helpText,
+        emotion,
+        timestamp: new Date(),
+      },
+    ]);
+
+    playTTS(helpText, emotion);
+  }, [emotion]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     sendMessage(input);
@@ -453,6 +470,7 @@ export default function ChatWindow() {
           <EmotionCamera onEmotionDetected={handleEmotionDetected} />
           <VoiceRecorder
             onTranscription={handleTranscription}
+            onNoSpeech={handleNoSpeech}
             disabled={isLoading}
           />
           <Input

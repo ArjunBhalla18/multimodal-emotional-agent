@@ -7,11 +7,17 @@ import { Button } from "@/components/ui/button";
 interface VoiceRecorderProps {
   onTranscription: (text: string) => void;
   disabled?: boolean;
+  /**
+   * Called when the user has been silent for a while and there is nothing
+   * worth sending to chat (e.g., could not hear anything).
+   */
+  onNoSpeech?: () => void;
 }
 
 // Extend Window for Web Speech API
 interface SpeechRecognitionEvent extends Event {
   results: SpeechRecognitionResultList;
+  resultIndex: number;
 }
 
 interface SpeechRecognitionInstance extends EventTarget {
@@ -35,10 +41,17 @@ declare global {
 export default function VoiceRecorder({
   onTranscription,
   disabled = false,
+  onNoSpeech,
 }: VoiceRecorderProps) {
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
+  const shouldStopRef = useRef(false);
+  const transcriptBufferRef = useRef<string>(""); // buffer all final speech until user stops
+  const silenceTimeoutRef = useRef<number | null>(null);
+  const silenceTriggeredRef = useRef(false);
+
+  const SILENCE_MS = 10000; // 10 seconds of no speech -> fallback
 
   const startRecording = useCallback(() => {
     const SpeechRecognition =
@@ -51,13 +64,116 @@ export default function VoiceRecorder({
       return;
     }
 
+    // Each "start" creates a fresh recognition instance to avoid stale callbacks.
     const recognition = new SpeechRecognition();
-    recognition.continuous = false;
-    recognition.interimResults = false;
+    shouldStopRef.current = false;
+    silenceTriggeredRef.current = false;
+    transcriptBufferRef.current = "";
+
+    const clearSilenceTimer = () => {
+      if (silenceTimeoutRef.current) {
+        window.clearTimeout(silenceTimeoutRef.current);
+        silenceTimeoutRef.current = null;
+      }
+    };
+
+    const resetSilenceTimer = () => {
+      clearSilenceTimer();
+      silenceTimeoutRef.current = window.setTimeout(() => {
+        // If we timed out for silence, don't restart.
+        silenceTriggeredRef.current = true;
+        shouldStopRef.current = true;
+
+        clearSilenceTimer();
+
+        const transcript = transcriptBufferRef.current.trim();
+        transcriptBufferRef.current = "";
+
+        if (transcript) {
+          setIsProcessing(true);
+          onTranscription(transcript);
+          setTimeout(() => setIsProcessing(false), 500);
+        } else {
+          onNoSpeech?.();
+        }
+
+        try {
+          recognition.stop();
+        } catch {
+          // ignore
+        }
+      }, SILENCE_MS);
+    };
+
+    // Continuous listening prevents the mic from "time-windowing" after a short pause.
+    recognition.continuous = true;
+    recognition.interimResults = true;
     recognition.lang = "en-US";
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
-      const transcript = event.results[0][0].transcript;
+      // Any recognized speech (including interim) resets silence timer.
+      let sawAnyText = false;
+
+      // Buffer only "final" segments; ignore interim results for now.
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const result = event.results[i];
+        const transcript = result[0]?.transcript ?? "";
+        if (transcript.trim()) {
+          sawAnyText = true;
+        }
+
+        if (result.isFinal && transcript.trim()) {
+          transcriptBufferRef.current =
+            transcriptBufferRef.current.trimEnd() +
+            (transcriptBufferRef.current ? " " : "") +
+            transcript.trim();
+        }
+      }
+
+      if (sawAnyText) resetSilenceTimer();
+    };
+
+    recognition.onerror = (event) => {
+      console.error("Speech recognition error:", event.error);
+      setIsRecording(false);
+      shouldStopRef.current = true;
+      transcriptBufferRef.current = "";
+      clearSilenceTimer();
+      setIsProcessing(false);
+    };
+
+    recognition.onend = () => {
+      setIsRecording(false);
+
+      // Silence handler already sent fallback and finalized.
+      if (silenceTriggeredRef.current) {
+        silenceTriggeredRef.current = false;
+        return;
+      }
+
+      // If the user didn't explicitly stop, try restarting to avoid early endings.
+      if (!shouldStopRef.current) {
+        try {
+          recognition.start();
+          setIsRecording(true);
+          resetSilenceTimer();
+        } catch (e) {
+          // If restart fails, just finalize what we have (if anything).
+          const transcript = transcriptBufferRef.current.trim();
+          transcriptBufferRef.current = "";
+          if (transcript) {
+            setIsProcessing(true);
+            onTranscription(transcript);
+            setTimeout(() => setIsProcessing(false), 500);
+          }
+        }
+        return;
+      }
+
+      // User clicked stop: send whatever we captured.
+      const transcript = transcriptBufferRef.current.trim();
+      transcriptBufferRef.current = "";
+      clearSilenceTimer();
       if (transcript) {
         setIsProcessing(true);
         onTranscription(transcript);
@@ -65,27 +181,38 @@ export default function VoiceRecorder({
       }
     };
 
-    recognition.onerror = (event) => {
-      console.error("Speech recognition error:", event.error);
-      setIsRecording(false);
-      setIsProcessing(false);
-    };
-
-    recognition.onend = () => {
-      setIsRecording(false);
-    };
-
     recognitionRef.current = recognition;
     recognition.start();
     setIsRecording(true);
-  }, [onTranscription]);
+
+    // Start counting silence immediately after mic start.
+    resetSilenceTimer();
+  }, [onTranscription, onNoSpeech]);
 
   const stopRecording = useCallback(() => {
-    if (recognitionRef.current && isRecording) {
+    if (!recognitionRef.current) return;
+    // Mark as user-stopped so `onend` finalizes instead of restarting.
+    shouldStopRef.current = true;
+    silenceTriggeredRef.current = false;
+    if (silenceTimeoutRef.current) {
+      window.clearTimeout(silenceTimeoutRef.current);
+      silenceTimeoutRef.current = null;
+    }
+    try {
       recognitionRef.current.stop();
+    } catch (e) {
+      // If stopping fails, finalize anyway.
+      const transcript = transcriptBufferRef.current.trim();
+      transcriptBufferRef.current = "";
+      if (transcript) {
+        setIsProcessing(true);
+        onTranscription(transcript);
+        setTimeout(() => setIsProcessing(false), 500);
+      }
+    } finally {
       setIsRecording(false);
     }
-  }, [isRecording]);
+  }, [onTranscription]);
 
   return (
     <div className="relative">
