@@ -7,7 +7,7 @@ import { getDatabase } from "@/lib/mongodb";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { message, emotion = "neutral", history = [], userId } = body;
+    const { message, emotion = "neutral", history = [], userId, userName } = body;
 
     if (!message || typeof message !== "string") {
       return Response.json({ error: "Message is required" }, { status: 400 });
@@ -42,7 +42,8 @@ export async function POST(request: NextRequest) {
       context.user_input,
       context.emotion,
       geminiHistory,
-      emotionalContext
+      emotionalContext,
+      userName || ""
     );
 
     const reply = filterResponse(rawReply);

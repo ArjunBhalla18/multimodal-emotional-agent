@@ -13,9 +13,10 @@ export async function generateChatResponse(
   message: string,
   emotion: string,
   history: ChatMessage[] = [],
-  emotionalContext: string = "" // What we know about the user from past chats
+  emotionalContext: string = "", // What we know about the user from past chats
+  userName: string = "" // User's profile display name
 ): Promise<string> {
-  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
   const chat = model.startChat({
     history: [
@@ -30,7 +31,7 @@ export async function generateChatResponse(
       ...history,
     ],
     generationConfig: {
-      maxOutputTokens: 300, // Reduced from 1024 — forces shorter, more human responses
+      maxOutputTokens: 1024,
       temperature: 0.9,    // Slightly higher = more natural/varied responses
     },
   });
@@ -42,7 +43,11 @@ export async function generateChatResponse(
     ? `\nWhat I know about this user from before: ${emotionalContext}`
     : "";
 
-  const fullMessage = `${systemPrompt}${contextSection}\n\nCurrent detected emotion: ${emotion}\nUser message: ${message}`;
+  const nameSection = userName
+    ? `\nThe user's name is ${userName}. Use it naturally sometimes — don't overuse it. If they tell you a different name, use that instead.`
+    : "";
+
+  const fullMessage = `${systemPrompt}${nameSection}${contextSection}\n\nCurrent detected emotion: ${emotion}\nUser message: ${message}`;
 
   const result = await chat.sendMessage(fullMessage);
   return result.response.text();

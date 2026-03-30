@@ -220,6 +220,7 @@ export default function ChatWindow() {
             emotion,
             history,
             userId: user?.uid || null, // Pass user ID for context memory
+            userName: user?.displayName || null,
           }),
         });
 
