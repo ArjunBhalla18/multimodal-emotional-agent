@@ -16,7 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useTheme } from "@/context/ThemeContext";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { SerenaMark } from "@/components/SerenaMark";
 
@@ -24,6 +24,32 @@ export default function Navbar() {
   const { user, logout } = useAuth();
   const { theme, setTheme } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+
+  // Load user avatar from MongoDB
+  useEffect(() => {
+    if (!user?.uid) {
+      setAvatarUrl(null);
+      return;
+    }
+
+    const loadAvatar = async () => {
+      try {
+        const response = await fetch("/api/user", {
+          headers: { "x-user-id": user.uid },
+        });
+        if (!response.ok) return;
+        const data = await response.json();
+        if (typeof data.avatar === "string" && data.avatar.trim()) {
+          setAvatarUrl(data.avatar);
+        }
+      } catch (error) {
+        console.error("Failed to load avatar:", error);
+      }
+    };
+
+    loadAvatar();
+  }, [user?.uid]);
 
   const navLinks = [
     { href: "/chat", label: "Chat", icon: "💬" },
@@ -34,7 +60,7 @@ export default function Navbar() {
     <motion.nav
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60"
+      className="sticky top-0 z-50 w-full border-b border-white/[0.06] bg-background/40 backdrop-blur-2xl backdrop-saturate-150"
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo */}
@@ -85,11 +111,21 @@ export default function Navbar() {
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger className="flex h-9 cursor-pointer items-center gap-2 rounded-lg px-3 text-sm hover:bg-accent" id="user-menu">
-                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 text-xs font-bold text-white">
-                    {user.displayName?.[0]?.toUpperCase() ||
-                      user.email?.[0]?.toUpperCase() ||
-                      "U"}
-                  </div>
+                  {avatarUrl ? (
+                    <div className="h-6 w-6 overflow-hidden rounded-full ring-1 ring-violet-500/30">
+                      <img
+                        src={avatarUrl}
+                        alt="Avatar"
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 text-xs font-bold text-white">
+                      {user.displayName?.[0]?.toUpperCase() ||
+                        user.email?.[0]?.toUpperCase() ||
+                        "U"}
+                    </div>
+                  )}
                   <span className="hidden text-sm font-medium sm:inline">
                     {user.displayName || user.email}
                   </span>

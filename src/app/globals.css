@@ -92,9 +92,9 @@
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
+  --card: oklch(0.18 0.005 280 / 60%);
   --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
+  --popover: oklch(0.18 0.005 280 / 70%);
   --popover-foreground: oklch(0.985 0 0);
   --primary: oklch(0.922 0 0);
   --primary-foreground: oklch(0.205 0 0);
@@ -133,4 +133,26 @@
   html {
     @apply font-sans;
   }
+}
+
+/* ─── Glassmorphism utilities ─────────────────────────────────────── */
+.glass {
+  background: oklch(0.18 0.005 280 / 45%);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  border: 1px solid oklch(1 0 0 / 8%);
+}
+
+.glass-subtle {
+  background: oklch(0.16 0.003 280 / 30%);
+  backdrop-filter: blur(12px) saturate(1.2);
+  -webkit-backdrop-filter: blur(12px) saturate(1.2);
+  border: 1px solid oklch(1 0 0 / 6%);
+}
+
+.glass-strong {
+  background: oklch(0.18 0.008 280 / 55%);
+  backdrop-filter: blur(24px) saturate(1.6);
+  -webkit-backdrop-filter: blur(24px) saturate(1.6);
+  border: 1px solid oklch(1 0 0 / 10%);
 }

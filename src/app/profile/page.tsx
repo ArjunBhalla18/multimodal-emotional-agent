@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Toggle } from "@/components/ui/toggle";
 import { toast } from "sonner";
 
@@ -34,6 +34,9 @@ export default function ProfilePage() {
   const [country, setCountry] = useState("");
   const [interests, setInterests] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -68,6 +71,9 @@ export default function ProfilePage() {
         if (Array.isArray(data.preferences)) {
           setInterests(data.preferences.slice(0, 3));
         }
+        if (typeof data.avatar === "string" && data.avatar.trim()) {
+          setAvatarUrl(data.avatar);
+        }
       } catch (error) {
         console.error("Failed to load profile:", error);
       }
@@ -87,6 +93,52 @@ export default function ProfilePage() {
       }
       return [...prev, interest];
     });
+  };
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user?.uid) return;
+
+    // Validate on client side too
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error("Please upload a JPEG, PNG, WebP, or GIF image");
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Image must be under 2MB");
+      return;
+    }
+
+    setAvatarUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("avatar", file);
+
+      const response = await fetch("/api/user/avatar", {
+        method: "POST",
+        headers: { "x-user-id": user.uid },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Upload failed");
+      }
+
+      const data = await response.json();
+      setAvatarUrl(data.avatar);
+      toast.success("Profile picture updated!");
+    } catch (error) {
+      console.error("Avatar upload failed:", error);
+      toast.error("Failed to upload image. Please try again.");
+    } finally {
+      setAvatarUploading(false);
+      // Reset file input so the same file can be re-selected
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
   };
 
   const handleSave = async () => {
@@ -147,13 +199,64 @@ export default function ProfilePage() {
         {/* Profile Header */}
         <Card className="border-border/60 bg-card/80 shadow-xl backdrop-blur-sm">
           <CardContent className="flex flex-col items-center gap-4 pt-8 pb-6">
-            <Avatar className="h-20 w-20">
-              <AvatarFallback className="bg-gradient-to-br from-violet-500 to-indigo-600 text-2xl font-bold text-white">
-                {user.displayName?.[0]?.toUpperCase() ||
-                  user.email?.[0]?.toUpperCase() ||
-                  "U"}
-              </AvatarFallback>
-            </Avatar>
+            {/* Avatar with upload */}
+            <div className="group relative">
+              <Avatar className="h-20 w-20">
+                {avatarUrl ? (
+                  <AvatarImage src={avatarUrl} alt="Profile picture" />
+                ) : null}
+                <AvatarFallback className="bg-gradient-to-br from-violet-500 to-indigo-600 text-2xl font-bold text-white">
+                  {user.displayName?.[0]?.toUpperCase() ||
+                    user.email?.[0]?.toUpperCase() ||
+                    "U"}
+                </AvatarFallback>
+              </Avatar>
+
+              {/* Upload overlay */}
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={avatarUploading}
+                className="absolute inset-0 flex cursor-pointer items-center justify-center rounded-full bg-black/0 transition-all duration-200 group-hover:bg-black/50"
+                id="avatar-upload-btn"
+              >
+                <span className="text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                  {avatarUploading ? (
+                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  ) : (
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                      <polyline points="17 8 12 3 7 8" />
+                      <line x1="12" y1="3" x2="12" y2="15" />
+                    </svg>
+                  )}
+                </span>
+              </button>
+
+              {/* Hidden file input */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                onChange={handleAvatarUpload}
+                className="hidden"
+                id="avatar-file-input"
+              />
+            </div>
+
+            <p className="text-xs text-muted-foreground">
+              Click avatar to change • Max 2MB
+            </p>
+
             <div className="text-center">
               <h2 className="text-xl font-bold">
                 {user.displayName || "User"}
@@ -205,7 +308,10 @@ export default function ProfilePage() {
                 />
               </div>
               <div className="space-y-2">
-                <label htmlFor="profile-country" className="text-sm font-medium">
+                <label
+                  htmlFor="profile-country"
+                  className="text-sm font-medium"
+                >
                   Country (optional)
                 </label>
                 <Input

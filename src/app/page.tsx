@@ -87,12 +87,12 @@ export default function Home() {
             for themselves.
           </p>
 
-          {/* CTAs */}
+          {/* CTA */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
-            className="mt-10 flex flex-col gap-3 sm:flex-row"
+            className="mt-10"
           >
             <Link href="/chat">
               <Button
@@ -101,16 +101,6 @@ export default function Home() {
                 id="hero-cta"
               >
                 Start Chatting →
-              </Button>
-            </Link>
-            <Link href="/signup">
-              <Button
-                size="lg"
-                variant="outline"
-                className="h-12 rounded-xl px-8 text-base font-semibold"
-                id="hero-signup"
-              >
-                Create Account
               </Button>
             </Link>
           </motion.div>

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -28,6 +29,7 @@ export default function ChatWindow() {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
   const [chatLoading, setChatLoading] = useState(true); // loading previous chat
+  const [userAvatar, setUserAvatar] = useState<string | null>(null);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -81,6 +83,28 @@ export default function ChatWindow() {
     };
 
     loadRecentChat();
+  }, [user?.uid]);
+
+  // ─── Load user avatar from MongoDB ────────────────────────────────────────
+  useEffect(() => {
+    if (!user?.uid) return;
+
+    const loadAvatar = async () => {
+      try {
+        const response = await fetch("/api/user", {
+          headers: { "x-user-id": user.uid },
+        });
+        if (!response.ok) return;
+        const data = await response.json();
+        if (typeof data.avatar === "string" && data.avatar.trim()) {
+          setUserAvatar(data.avatar);
+        }
+      } catch (e) {
+        console.error("Failed to load avatar:", e);
+      }
+    };
+
+    loadAvatar();
   }, [user?.uid]);
 
   // ─── Auto-save chat to MongoDB 2 seconds after last message ───────────────
@@ -426,6 +450,7 @@ export default function ChatWindow() {
                 emotion={msg.emotion}
                 timestamp={msg.timestamp}
                 userName={user?.displayName || undefined}
+                userAvatar={userAvatar || undefined}
               />
             ))
           )}
@@ -437,8 +462,14 @@ export default function ChatWindow() {
               animate={{ opacity: 1 }}
               className="flex gap-3"
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 text-xs font-bold text-white">
-                AI
+              <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-white p-0.5 shadow-md shadow-violet-500/15 ring-1 ring-violet-500/20 dark:bg-white">
+                <Image
+                  src="/serena-mark.png"
+                  alt="Serena"
+                  width={32}
+                  height={32}
+                  className="h-full w-full object-contain"
+                />
               </div>
               <div className="rounded-2xl bg-card border border-border px-4 py-3 shadow-sm">
                 <div className="flex gap-1.5">

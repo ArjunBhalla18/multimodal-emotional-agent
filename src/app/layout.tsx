@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/context/ThemeContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { Toaster } from "@/components/ui/sonner";
 import Navbar from "@/components/Navbar";
+import Oneko from "@/components/Oneko";
 import "./globals.css";
 
 const inter = Inter({
@@ -41,6 +42,7 @@ export default function RootLayout({
             <Navbar />
             <main className="flex-1 flex flex-col">{children}</main>
             <Toaster />
+            <Oneko />
           </AuthProvider>
         </ThemeProvider>
       </body>

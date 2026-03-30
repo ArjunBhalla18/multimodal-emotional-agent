@@ -1,7 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import Image from "next/image";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface MessageBubbleProps {
   role: "user" | "assistant";
@@ -9,6 +10,7 @@ interface MessageBubbleProps {
   emotion?: string;
   timestamp?: Date;
   userName?: string;
+  userAvatar?: string;
 }
 
 const EMOTION_BADGES: Record<string, { emoji: string; color: string }> = {
@@ -27,6 +29,7 @@ export default function MessageBubble({
   emotion,
   timestamp,
   userName,
+  userAvatar,
 }: MessageBubbleProps) {
   const isUser = role === "user";
   const badge = emotion ? EMOTION_BADGES[emotion] || EMOTION_BADGES.neutral : null;
@@ -39,17 +42,28 @@ export default function MessageBubble({
       className={`flex gap-3 ${isUser ? "flex-row-reverse" : "flex-row"}`}
     >
       {/* Avatar */}
-      <Avatar className="h-8 w-8 shrink-0 mt-1">
-        <AvatarFallback
-          className={
-            isUser
-              ? "bg-gradient-to-br from-violet-500 to-indigo-600 text-white text-xs font-bold"
-              : "bg-gradient-to-br from-emerald-500 to-teal-600 text-white text-xs font-bold"
-          }
-        >
-          {isUser ? (userName?.[0]?.toUpperCase() || "U") : "AI"}
-        </AvatarFallback>
-      </Avatar>
+      {isUser ? (
+        <Avatar className="h-8 w-8 shrink-0 mt-1">
+          {userAvatar ? (
+            <AvatarImage src={userAvatar} alt="You" />
+          ) : null}
+          <AvatarFallback
+            className="bg-gradient-to-br from-violet-500 to-indigo-600 text-white text-xs font-bold"
+          >
+            {userName?.[0]?.toUpperCase() || "U"}
+          </AvatarFallback>
+        </Avatar>
+      ) : (
+        <div className="flex h-8 w-8 shrink-0 mt-1 items-center justify-center overflow-hidden rounded-full bg-white p-0.5 shadow-md shadow-violet-500/15 ring-1 ring-violet-500/20 dark:bg-white">
+          <Image
+            src="/serena-mark.png"
+            alt="Serena"
+            width={32}
+            height={32}
+            className="h-full w-full object-contain"
+          />
+        </div>
+      )}
 
       {/* Bubble */}
       <div
