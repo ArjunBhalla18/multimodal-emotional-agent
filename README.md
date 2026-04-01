@@ -1,4 +1,4 @@
-# MindfulAI — Emotionally-Aware AI Companion
+# SerenaAI — Emotionally-Aware AI Companion
 
 A full-stack multimodal conversational AI assistant built with Next.js 16, featuring text/voice input, facial emotion detection, and emotionally-aware responses.
 
@@ -7,7 +7,7 @@ A full-stack multimodal conversational AI assistant built with Next.js 16, featu
 - **Frontend**: Next.js 16 (App Router), TypeScript, Tailwind CSS v4, shadcn/ui, Framer Motion
 - **Auth**: Firebase Authentication
 - **Database**: MongoDB Atlas
-- **AI**: Gemini API (LLM), Whisper (STT), ElevenLabs (TTS)
+- **AI**: Gemini API (LLM), WebSpeech (Speech Recognition), ElevenLabs (TTS)
 - **Emotion Detection**: Client-side webcam (stub — ready for DeepFace/face-api.js)
 
 ## Getting Started
