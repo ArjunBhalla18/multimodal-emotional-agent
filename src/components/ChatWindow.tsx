@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -331,7 +332,27 @@ export default function ChatWindow() {
 
   const handleGetHelp = async () => {
     try {
-      const response = await fetch("/api/emergency-support");
+      // Load user's country from profile to show relevant resources
+      let country = "";
+      if (user?.uid) {
+        try {
+          const userRes = await fetch("/api/user", {
+            headers: { "x-user-id": user.uid },
+          });
+          if (userRes.ok) {
+            const userData = await userRes.json();
+            country = userData.country || "";
+          }
+        } catch {
+          // Continue without country — will show international resources
+        }
+      }
+
+      const url = country
+        ? `/api/emergency-support?country=${encodeURIComponent(country)}`
+        : "/api/emergency-support";
+
+      const response = await fetch(url);
       const data = await response.json();
       const helpText = [
         data.message,
@@ -361,58 +382,62 @@ export default function ChatWindow() {
   // ─── Render ────────────────────────────────────────────────────────────────
   return (
     <div className="flex h-full flex-col">
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-border/40 bg-background/80 px-4 py-3 backdrop-blur-sm">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white p-1 shadow-lg shadow-violet-500/20 ring-1 ring-violet-500/20 dark:bg-white">
-            <SerenaMark className="h-full w-full" />
-          </div>
-          <div>
-            <h2 className="font-brand text-base font-semibold tracking-tight">
-              Serena
-            </h2>
-            <p className="text-[0.65rem] leading-tight text-muted-foreground sm:text-xs">
-              Conversations that Care
-            </p>
-            <div className="mt-0.5 flex items-center gap-1.5">
-              <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-xs text-muted-foreground">Online</span>
-              {emotion !== "neutral" && (
-                <span className="ml-1 text-xs text-muted-foreground">
-                  · Detected: {emotion}
-                </span>
-              )}
-              {isSpeaking && (
-                <span className="ml-1 text-xs text-violet-400">· Speaking</span>
-              )}
+      {/* Floating Serena branding — portaled to body */}
+      {typeof document !== "undefined" &&
+        createPortal(
+          <div className="fixed top-20 left-4 z-[9999] flex items-center gap-3 rounded-2xl border border-border/60 bg-card/90 px-4 py-3 shadow-lg backdrop-blur-sm">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white p-1 shadow-lg shadow-violet-500/20 ring-1 ring-violet-500/20 dark:bg-white">
+              <SerenaMark className="h-full w-full" />
             </div>
-          </div>
-        </div>
+            <div>
+              <h2 className="font-brand text-base font-semibold tracking-tight">
+                Serena
+              </h2>
+              <p className="text-[0.65rem] leading-tight text-muted-foreground sm:text-xs">
+                Conversations that Care
+              </p>
+              <div className="mt-0.5 flex items-center gap-1.5">
+                <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-xs text-muted-foreground">Online</span>
+                {emotion !== "neutral" && (
+                  <span className="ml-1 text-xs text-muted-foreground">
+                    · Detected: {emotion}
+                  </span>
+                )}
+                {isSpeaking && (
+                  <span className="ml-1 text-xs text-violet-400">· Speaking</span>
+                )}
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
 
-        <div className="flex items-center gap-2">
-          {/* New Chat button */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleNewChat}
-            className="rounded-lg text-sm"
-            id="new-chat-btn"
-          >
-            ✏️ New Chat
-          </Button>
-
-          {/* Get Help button */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleGetHelp}
-            className="rounded-lg border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950"
-            id="get-help-btn"
-          >
-            🆘 Get Help
-          </Button>
-        </div>
-      </div>
+      {/* Floating action buttons — portaled to body like camera preview */}
+      {typeof document !== "undefined" &&
+        createPortal(
+          <div className="fixed top-20 right-4 z-[9999] flex flex-col gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleNewChat}
+              className="rounded-xl bg-card/90 text-sm shadow-lg backdrop-blur-sm border-border/60 transition-all hover:border-violet-500/30 hover:shadow-violet-500/20 hover:bg-violet-500/10"
+              id="new-chat-btn"
+            >
+              ✏️ New Chat
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleGetHelp}
+              className="rounded-xl bg-card/90 text-sm shadow-lg backdrop-blur-sm border-red-500/30 text-red-500 transition-all hover:border-violet-500/30 hover:shadow-violet-500/20 hover:bg-violet-500/10 hover:text-violet-400"
+              id="get-help-btn"
+            >
+              🆘 Get Help
+            </Button>
+          </div>,
+          document.body
+        )}
 
       {/* Messages */}
       <ScrollArea className="flex-1 px-4">

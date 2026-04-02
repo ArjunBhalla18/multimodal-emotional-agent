@@ -4,6 +4,8 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
+import { updateProfile } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -164,6 +166,11 @@ export default function ProfilePage() {
         throw new Error("Failed to save profile");
       }
 
+      // Sync name to Firebase Auth so navbar + avatar header stay in sync
+      if (name.trim() && auth.currentUser) {
+        await updateProfile(auth.currentUser, { displayName: name.trim() });
+      }
+
       toast.success("Profile updated!");
     } catch (error) {
       console.error("Profile save failed:", error);
@@ -253,9 +260,35 @@ export default function ProfilePage() {
               />
             </div>
 
-            <p className="text-xs text-muted-foreground">
-              Click avatar to change • Max 2MB
-            </p>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span>Click avatar to change • Max 2MB</span>
+              {avatarUrl && (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (!user?.uid) return;
+                    try {
+                      const res = await fetch("/api/user/avatar", {
+                        method: "DELETE",
+                        headers: { "x-user-id": user.uid },
+                      });
+                      if (res.ok) {
+                        setAvatarUrl(null);
+                        toast.success("Avatar removed");
+                      } else {
+                        toast.error("Failed to remove avatar");
+                      }
+                    } catch {
+                      toast.error("Failed to remove avatar");
+                    }
+                  }}
+                  className="text-red-400 hover:text-red-300 transition-colors underline underline-offset-2"
+                  id="avatar-delete-btn"
+                >
+                  Remove
+                </button>
+              )}
+            </div>
 
             <div className="text-center">
               <h2 className="text-xl font-bold">

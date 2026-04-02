@@ -66,3 +66,30 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+// DELETE /api/user/avatar — remove avatar
+export async function DELETE(request: NextRequest) {
+  try {
+    const userId = request.headers.get("x-user-id");
+    if (!userId) {
+      return Response.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const db = await getDatabase();
+    await db.collection<UserDoc>("users").updateOne(
+      { _id: userId },
+      {
+        $unset: { avatar: "" },
+        $set: { updatedAt: new Date() },
+      }
+    );
+
+    return Response.json({ success: true });
+  } catch (error) {
+    console.error("Avatar delete error:", error);
+    return Response.json(
+      { error: "Failed to delete avatar" },
+      { status: 500 }
+    );
+  }
+}

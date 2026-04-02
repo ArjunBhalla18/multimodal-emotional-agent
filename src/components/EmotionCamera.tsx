@@ -229,7 +229,7 @@ export default function EmotionCamera({
                 initial={{ opacity: 0, scale: 0.9, y: -10 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9, y: -10 }}
-                className="fixed top-20 right-4 z-[9999] overflow-hidden rounded-2xl border border-border/60 bg-card shadow-2xl shadow-black/20"
+                className="fixed top-40 right-4 z-[9999] overflow-hidden rounded-2xl border border-border/60 bg-card shadow-2xl shadow-black/20"
               >
                 <div className="relative">
                   <video

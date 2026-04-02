@@ -53,7 +53,6 @@ export default function Navbar() {
 
   const navLinks = [
     { href: "/chat", label: "Chat", icon: "💬" },
-    { href: "/profile", label: "Profile", icon: "👤" },
   ];
 
   return (
@@ -127,7 +126,7 @@ export default function Navbar() {
                     </div>
                   )}
                   <span className="hidden text-sm font-medium sm:inline">
-                    {user.displayName || user.email}
+                    {user.displayName || "User"}
                   </span>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
