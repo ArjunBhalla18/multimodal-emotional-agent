@@ -393,9 +393,7 @@ export default function ChatWindow() {
               <h2 className="font-brand text-base font-semibold tracking-tight">
                 Serena
               </h2>
-              <p className="text-[0.65rem] leading-tight text-muted-foreground sm:text-xs">
-                Conversations that Care
-              </p>
+
               <div className="mt-0.5 flex items-center gap-1.5">
                 <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                 <span className="text-xs text-muted-foreground">Online</span>
@@ -421,7 +419,7 @@ export default function ChatWindow() {
               variant="outline"
               size="sm"
               onClick={handleNewChat}
-              className="rounded-xl bg-card/90 text-sm shadow-lg backdrop-blur-sm border-border/60 transition-all hover:border-violet-500/30 hover:shadow-violet-500/20 hover:bg-violet-500/10"
+              className="rounded-xl bg-card/90 text-sm shadow-lg backdrop-blur-sm border-border/60 transition-all hover:border-violet-500/30 hover:shadow-[0_0_14px_rgba(139,92,246,0.35)] hover:bg-violet-500/10"
               id="new-chat-btn"
             >
               ✏️ New Chat
@@ -430,7 +428,7 @@ export default function ChatWindow() {
               variant="outline"
               size="sm"
               onClick={handleGetHelp}
-              className="rounded-xl bg-card/90 text-sm shadow-lg backdrop-blur-sm border-red-500/30 text-red-500 transition-all hover:border-violet-500/30 hover:shadow-violet-500/20 hover:bg-violet-500/10 hover:text-violet-400"
+              className="rounded-xl bg-card/90 text-sm shadow-lg backdrop-blur-sm border-red-500/30 text-red-500 transition-all hover:border-violet-500/30 hover:shadow-[0_0_14px_rgba(139,92,246,0.35)] hover:bg-violet-500/10 hover:text-red-500"
               id="get-help-btn"
             >
               🆘 Get Help

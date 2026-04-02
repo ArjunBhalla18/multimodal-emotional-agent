@@ -33,7 +33,7 @@ export default function ProfilePage() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [country, setCountry] = useState("");
+  const [country, setCountry] = useState("Other");
   const [interests, setInterests] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -347,13 +347,20 @@ export default function ProfilePage() {
                 >
                   Country (optional)
                 </label>
-                <Input
+                <select
                   id="profile-country"
                   value={country}
                   onChange={(e) => setCountry(e.target.value)}
-                  placeholder="United States"
-                  className="rounded-xl"
-                />
+                  className="flex h-9 w-full rounded-xl border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                >
+
+                  <option value="India">India</option>
+                  <option value="United States">United States</option>
+                  <option value="United Kingdom">United Kingdom</option>
+                  <option value="Canada">Canada</option>
+                  <option value="Australia">Australia</option>
+                  <option value="Other">Other</option>
+                </select>
               </div>
             </div>
           </CardContent>
