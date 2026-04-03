@@ -422,7 +422,7 @@ export default function ChatWindow() {
               className="rounded-xl bg-card/90 text-sm shadow-lg backdrop-blur-sm border-border/60 transition-all hover:border-violet-500/30 hover:shadow-[0_0_14px_rgba(139,92,246,0.35)] hover:bg-violet-500/10"
               id="new-chat-btn"
             >
-              ✏️ New Chat
+              New Chat
             </Button>
             <Button
               variant="outline"
@@ -431,7 +431,7 @@ export default function ChatWindow() {
               className="rounded-xl bg-card/90 text-sm shadow-lg backdrop-blur-sm border-red-500/30 text-red-500 transition-all hover:border-violet-500/30 hover:shadow-[0_0_14px_rgba(139,92,246,0.35)] hover:bg-violet-500/10 hover:text-red-500"
               id="get-help-btn"
             >
-              🆘 Get Help
+              Get Help
             </Button>
           </div>,
           document.body
