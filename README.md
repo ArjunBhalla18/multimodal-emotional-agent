@@ -80,6 +80,6 @@ src/
 
 ## Safety
 
-- No medical advice or prescriptions
+- No diagnosis or medical suggestions
 - On-device emotion processing only (no video/audio stored)
 - Crisis resources via "Get Help" button
